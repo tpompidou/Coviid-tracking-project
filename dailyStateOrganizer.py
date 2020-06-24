@@ -16,12 +16,14 @@ STATES = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA",
 #
 # gc = gspread.authorize(credentials)
 
-
 def getState(data, state):  # done
     jsonFilter = [x for x in data if x['state'] == state]
     return jsonFilter
 
-
+def getUS():
+    with open('historicalDataUS.JSON') as f:
+        data = json.load(f)
+    return data
 def getJSON():  # done
     with open('historicalData.JSON') as f:
         data = json.load(f)
@@ -49,6 +51,24 @@ def extractData(data):  # done
             recovered.append(0)
     return date, state, positive, death, recovered
 
+def extractDataUS(data):  # done
+    inner = data
+    date = []
+    positive = []
+    recovered = []
+    death = []
+    for p in inner:
+        a = str(p['date'])
+        d = a[4:6] + "/" + a[6:] + "/" + a[:4]
+        date.append(d)
+        positive.append(p['positive'])
+        try:
+            recovered.append(p['recovered'])
+            death.append(p['death'])
+        except KeyError:
+            death.append(0)
+            recovered.append(0)
+    return date, positive, death, recovered
 
 def dataParse(date, state, positive, death, recovered):
     csvData = [[]]
@@ -61,9 +81,18 @@ def dataParse(date, state, positive, death, recovered):
         csvData.append([])
     return csvData
 
+def dataParseUS(date, positive, death, recovered):
+    csvData = [[]]
+    for i in range(len(date)):
+        csvData[i].append(date[i])
+        csvData[i].append(positive[i])
+        csvData[i].append(death[i])
+        csvData[i].append(recovered[i])
+        csvData.append([])
+    return csvData
 
 def storeCSV(csvData, state):
-    name = 'historicalData' + state + '.csv'
+    name = "coronaData\historicalData" + state + '.csv'
     with open(name, 'w', newline='')as csvfile:
         write = csv.writer(csvfile)
         write.writerow(['State', 'Date', 'Positive', 'Death', 'recovered'])
@@ -71,6 +100,14 @@ def storeCSV(csvData, state):
             write.writerow(p)
     return name
 
+def storeCSVUSA(csvData):
+    name = "coronaData\historicalDataUSA.csv"
+    with open(name, 'w', newline='')as csvfile:
+        write = csv.writer(csvfile)
+        write.writerow(['Date', 'Positive', 'Death', 'recovered'])
+        for p in csvData:
+            write.writerow(p)
+    return name
 
 # def pushToSheets:
 #     return ''
@@ -83,16 +120,10 @@ def main():
         date, state, positive, death, recovered = extractData(data)
         data = dataParse(date, state, positive, death, recovered)
         storeCSV(data, STATES[i])
+    data=getUS()
+    date, positive, death, recovered = extractDataUS(data)
+    data = dataParseUS(date, positive, death, recovered)
+    storeCSVUSA(data)
 
 
 main()
-
-
-
-
-
-
-
-
-
-
