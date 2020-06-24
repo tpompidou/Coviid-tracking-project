@@ -16,11 +16,11 @@ def getStockData(name):  ## gets data
 
 
 def makeCSV(name, df):  ## data into csv
-    df.to_csv(name + '.csv')
+    df.to_csv("stockData\\" + name + '.csv')
 
 
-def readCSV():  ## read csv
-    df = pd.read_csv(name + '.csv', parse_dates=True, index_col=0)
+def readCSV(name):  ## read csv
+    df = pd.read_csv("stockData\\" + name + '.csv', parse_dates=True, index_col=0)
     return df
 
 
@@ -32,7 +32,7 @@ def graphCSV(df):  ##makes the graph
 def main():
     for i in STOCKS:
         df = getStockData(i)
-        makeCSV(i,df)
+        makeCSV(i, df)
+
 
 main()
-
